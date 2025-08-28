@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+
+# Django specific
+*.log
+*.pot
+*.pyc
+*.mo
+*.db
+*.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+venv/
+env/
+ENV/
+*.env
+
+# VSCode settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+*.swp
+
+# Migrations (optional if you don't want to track migrations)
+*/migrations/__pycache__/
+*/migrations/*.py
+
+# Node (if frontend will be in same repo)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Coverage
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+.cache
+nosetests.xml
+coverage.xml
+
+# PostgreSQL dumps
+*.sql
+*.backup
