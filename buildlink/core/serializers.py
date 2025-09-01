@@ -9,7 +9,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'role', 'national_id', 'trade']
+        fields = ['id', 'username', 'email', 'phone','password', 'role', 'national_id', 'trade']
+        extra_kwargs = {
+            'phone': {'required': True},
+        }
 
     def validate(self, attrs):
         role = attrs.get('role')
@@ -36,6 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
+            phone=validated_data['phone'],
             password=validated_data['password'],
             role=validated_data['role'],
             national_id=national_id_obj  # Link NationalID if worker
@@ -51,4 +55,4 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role']
+        fields = ['id', 'username', 'email', 'phone','role']

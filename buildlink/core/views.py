@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from .models import User
 from .serializers import RegisterSerializer, UserSerializer
 
@@ -27,13 +27,17 @@ class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
-            token.blacklist()  # Requires SimpleJWT blacklist app
-            return Response({"detail": "Successfully logged out"}, status=200)
-        except Exception:
-            return Response({"detail": "Invalid token"}, status=400)
+            token.blacklist()
+            return Response({"detail": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
+        except TokenError:
+            return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Create your views here.
