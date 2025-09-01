@@ -23,8 +23,14 @@ class User(AbstractUser):
     verified = models.BooleanField(default=False)
     avg_rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    national_id = models.OneToOneField(
+        'NationalID',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="user"
+    ) 
 
-    REQUIRED_FIELDS = ['email', 'phone', 'role']
+    REQUIRED_FIELDS = ['email', 'phone', 'role','NationalID']
 
     def __str__(self):
         return f"{self.full_name} ({self.role})"
@@ -54,14 +60,12 @@ class Trade(models.Model):
 
 
 class WorkerTrade(models.Model):
-    worker = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'worker'})
-    trade = models.ForeignKey(Trade, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('worker', 'trade')
+    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="worker_trades")
+    trade = models.ForeignKey("Trade", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.worker.full_name} - {self.trade.name}"
+        return f"{self.user.username} - {self.trade.name}"
+
 
 
 
