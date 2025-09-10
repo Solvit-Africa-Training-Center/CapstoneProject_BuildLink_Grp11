@@ -38,7 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'core',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+   
+   
+    'Users',
+    'notifications',
+    'projects',
+    'trades',
+    'applications',
+    'ratings',
+    
 ]
 
 MIDDLEWARE = [
@@ -127,5 +137,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'Users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
