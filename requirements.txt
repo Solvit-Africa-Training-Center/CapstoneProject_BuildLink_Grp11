@@ -1,0 +1,29 @@
+# Django core
+Django==5.0.6
+
+# Django REST Framework
+djangorestframework==3.15.2
+
+# JWT Authentication
+djangorestframework-simplejwt==5.3.1
+
+# PostgreSQL adapter
+psycopg2-binary==2.9.9
+
+# CORS headers (if your React frontend will interact with Django API)
+django-cors-headers==4.3.1
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Gunicorn (for production server)
+gunicorn==21.2.0
+
+# Pillow (for image handling, if needed for portfolio or worker images)
+Pillow==10.3.0
+
+# Optional: For handling async tasks if you plan to use Celery later
+celery==5.3.4
+
+# Optional: For Redis broker (with Celery or caching)
+redis==5.0.1
