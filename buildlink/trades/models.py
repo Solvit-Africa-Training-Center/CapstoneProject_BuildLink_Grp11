@@ -11,7 +11,7 @@ class Trade(models.Model):
         MASON = 'mason', _('Mason')
         ROOFER = 'roofer',_('Roofer')
         OTHER = 'other', _('Other')
-    # name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
