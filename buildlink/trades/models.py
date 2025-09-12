@@ -1,8 +1,17 @@
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 class Trade(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    class ChooseTrade(models.TextChoices):
+        PLUMBER = 'plumber', _('Plumber')
+        ELECTRICIAN = 'electrician', _('Electrician')
+        CARPENTER = 'carpenter', _('Carpenter')
+        PAINTER = 'painter', _('Painter')
+        MASON = 'mason', _('Mason')
+        ROOFER = 'roofer',_('Roofer')
+        OTHER = 'other', _('Other')
+    # name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
