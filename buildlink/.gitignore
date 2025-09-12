@@ -55,3 +55,6 @@ coverage.xml
 # PostgreSQL dumps
 *.sql
 *.backup
+
+# Ignore local settings files
+buildlink/local_settings.py
