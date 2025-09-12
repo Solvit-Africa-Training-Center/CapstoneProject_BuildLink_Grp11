@@ -87,9 +87,9 @@ WSGI_APPLICATION = 'buildlink.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydatabase',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'admin',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -145,3 +145,15 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+# Email backend
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "nkejdavid@gmail.com"
+EMAIL_HOST_PASSWORD = "zmjt gcfb oamn lgxs"  # Use Google App Password, not your regular password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Frontend URL
+FRONTEND_URL = "http://localhost:3000"
