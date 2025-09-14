@@ -55,3 +55,6 @@ coverage.xml
 # PostgreSQL dumps
 *.sql
 *.backup
+
+# Settings files (if you want to ignore local settings)
+local_settings.py
