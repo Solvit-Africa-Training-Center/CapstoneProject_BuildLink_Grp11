@@ -27,3 +27,9 @@ celery==5.3.4
 
 # Optional: For Redis broker (with Celery or caching)
 redis==5.0.1
+
+# Optional: For API documentation
+drf-yasg==1.21.6
+
+# Optional: For filtering and searching in DRF
+django-filter==23.2
