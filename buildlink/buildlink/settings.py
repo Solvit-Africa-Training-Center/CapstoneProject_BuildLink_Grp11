@@ -27,12 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--^=dm)q4@m5x)$$3s9(*a)u_%n0-4)cv@#^1-!5lme%5a+2-k$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    'https://capstoneproject-buildlink-grp11.onrender.com',
-]
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -184,8 +180,12 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Frontend URL
 FRONTEND_URL = "http://localhost:3000"
 
-CORS_ALLOW_ALL_ORIGINS = True
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://capstoneproject-buildlink-grp11.onrender.com",
+]
+CORS_ALLOWED_ORIGINS_ALL = True
 
 # # Import local settings if available
 # try:
