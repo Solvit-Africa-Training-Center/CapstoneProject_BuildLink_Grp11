@@ -2,6 +2,10 @@ from django.db import models
 from Users.models import User
 from projects.models import Job
 from django.utils.translation import gettext_lazy as _
+from drf_yasg.utils import swagger_auto_schema
+
+
+@swagger_auto_schema(tags=["Applications"])
 
 class Application(models.Model):
     class Status(models.TextChoices):
@@ -13,6 +17,7 @@ class Application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('job', 'applicant')

@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure--^=dm)q4@m5x)$$3s9(*a)u_%n0-4)cv@#^1-!5lme%5a+2-k$
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '.ngrok-free.app'
+]
 
 
 # Application definition
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     'drf_yasg',
+    'corsheaders',
    
    
     'Users',
@@ -54,6 +59,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -165,6 +171,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Frontend URL
 FRONTEND_URL = "http://localhost:3000"
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Import local settings if available

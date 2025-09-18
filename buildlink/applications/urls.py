@@ -3,7 +3,8 @@ from .views import (
     JobApplyView,
     MyApplicationsView,
     MyJobPostingsView,
-    JobApplicationsForOwnerView
+    JobApplicationsForOwnerView,
+    ApplicationStatusUpdateView
 )
 
 urlpatterns = [
@@ -18,4 +19,8 @@ urlpatterns = [
 
     # Owner views applications for a specific job
     path('my-postings/<int:job_id>/applications/', JobApplicationsForOwnerView.as_view(), name='job-applications-for-owner'),
+    
+    # Owner updates application status
+    path('<int:pk>/', ApplicationStatusUpdateView.as_view(), name='application-status-update'),
+
 ]

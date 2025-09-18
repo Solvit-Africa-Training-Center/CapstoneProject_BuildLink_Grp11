@@ -8,6 +8,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import smart_bytes
 from django.core.mail import send_mail
 from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
 
 from Users.models import User
 from .serializers import (
@@ -17,6 +18,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
+
 
 # ----------------------------
 # Register API
@@ -29,10 +31,18 @@ class RegisterView(generics.CreateAPIView):
     - Owner: Standard registration with optional company details
     - Student: Simple registration
     """
+    
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        Register a new user with their role and credentials.
+        """
+        return super().post(request, *args, **kwargs)
+    
 
 # ----------------------------
 # Login API
@@ -71,7 +81,15 @@ class CustomLoginSerializer(TokenObtainPairSerializer):
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomLoginSerializer
-
+    serializer_class= permissions.AllowAny
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        Login with credentials.
+        """
+        return super().post(request, *args, **kwargs)
+    
 
 # ----------------------------
 # Logout API
@@ -81,6 +99,17 @@ class LogoutView(APIView):
     Blacklist the refresh token upon logout.
     """
     permission_classes = [permissions.IsAuthenticated]
+    
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        Logout.
+        """
+        return super().post(request, *args, **kwargs)
+    
+    
+    
 
     def post(self, request):
         refresh_token = request.data.get("refresh")
@@ -103,6 +132,15 @@ class UserProfileView(APIView):
     Fetch current user's profile based on token.
     """
     permission_classes = [permissions.IsAuthenticated]
+    
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        User profile.
+        """
+        return super().post(request, *args, **kwargs)
+    
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -119,6 +157,14 @@ class WorkerProfileView(generics.RetrieveUpdateAPIView):
     """
     serializer_class = WorkerProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        worker profile.
+        """
+        return super().post(request, *args, **kwargs)
+    
 
     def get_object(self):
         return self.request.user
@@ -132,6 +178,13 @@ class CompanyVerificationView(APIView):
     Allows admin to verify or reject a company account.
     """
     permission_classes = [permissions.IsAdminUser]
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        verify company by admin
+        """
+        return super().post(request, *args, **kwargs)
 
     def post(self, request, company_id):
         try:
@@ -159,7 +212,17 @@ class CompanyVerificationView(APIView):
 class PasswordResetRequestView(APIView):
     """
     User requests a password reset link via email.
+    
     """
+    
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        Request Link to Confirm and Set New Password
+        """
+        return super().post(request, *args, **kwargs)
+    
+    
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -192,7 +255,17 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     """
     User sets a new password using the token from their email.
+
     """
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        """
+        Confirm and Set New Password
+        """
+        return super().post(request, *args, **kwargs)
+    
+    
+    
     def post(self, request, uidb64, token):
         data = {
             'uidb64': uidb64,

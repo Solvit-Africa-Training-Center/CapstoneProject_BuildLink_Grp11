@@ -13,3 +13,15 @@ class IsJobOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.posted_by_id == request.user.id
+
+
+
+
+class IsJobOwner(permissions.BasePermission):
+    """
+    Custom permission to only allow job owners to update an application's status.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # The logged-in user must be the owner of the job
+        return obj.job.posted_by == request.user

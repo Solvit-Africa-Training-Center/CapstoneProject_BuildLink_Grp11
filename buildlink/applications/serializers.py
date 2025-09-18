@@ -59,3 +59,34 @@ class ApplicantForOwnerSerializer(serializers.ModelSerializer):
             'id', 'applicant_name', 'applicant_email', 'applicant_phone', 'applicant_role',
             'status', 'created_at'
         ]
+
+
+
+
+
+class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = ['id', 'status', 'updated_at']
+
+    def validate_status(self, value):
+        valid_statuses = [s[0] for s in Application.Status.choices]
+        if value not in valid_statuses:
+            raise serializers.ValidationError(f"Invalid status. Must be one of: {valid_statuses}")
+        return value
+
+
+class ApplicationDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer to return full details of an application.
+    Includes related job and applicant information.
+    """
+    applicant_name = serializers.CharField(source='applicant.full_name', read_only=True)
+    job_title = serializers.CharField(source='job.title', read_only=True)
+
+    class Meta:
+        model = Application
+        fields = [
+            'id', 'job_title', 'applicant_name', 'status',
+            'created_at', 'updated_at'
+        ]

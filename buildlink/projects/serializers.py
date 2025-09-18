@@ -2,7 +2,6 @@
 from rest_framework import serializers
 from .models import Job
 from trades.models import Trade
-from Users.models import User
 
 
 class JobListSerializer(serializers.ModelSerializer):
@@ -69,7 +68,9 @@ class JobCreateUpdateSerializer(serializers.ModelSerializer):
 
         job_type = attrs.get('type')
         if job_type not in dict(Job.JobType.choices):
-            raise serializers.ValidationError(f"Invalid job type. Allowed types: {list(dict(Job.JobType.choices).keys())}")
+            raise serializers.ValidationError(
+                f"Invalid job type. Allowed types: {list(dict(Job.JobType.choices).keys())}"
+            )
 
         return attrs
 
@@ -102,3 +103,12 @@ class JobCreateUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class JobSerializer(serializers.ModelSerializer):
+    """
+    Simple serializer for internal use or when returning full job data.
+    """
+    class Meta:
+        model = Job
+        fields = '__all__'
