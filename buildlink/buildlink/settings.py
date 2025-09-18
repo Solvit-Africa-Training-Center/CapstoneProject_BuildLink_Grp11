@@ -94,7 +94,7 @@ WSGI_APPLICATION = 'buildlink.wsgi.application'
 
 
 
-# Database (default, can be overridden by local_settings.py)
+#Database (default, can be overridden by local_settings.py)
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -194,7 +194,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOWED_ORIGINS_ALL = True
 
-# # Import local settings if available
+# Import local settings if available
 # try:
 #     from .local_settings import *
 # except ImportError:
