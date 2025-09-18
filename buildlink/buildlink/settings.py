@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
+from decouple import config
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -95,17 +98,26 @@ WSGI_APPLICATION = 'buildlink.wsgi.application'
 
 
 # Database (default, can be overridden by local_settings.py)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'default_db',
-        'USER': 'default_user',
-        'PASSWORD': 'default_pass',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'default_db',
+#         'USER': 'default_user',
+#         'PASSWORD': 'default_pass',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
+
+DATABASE_URL=config('DATABASE_URL')
+
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL environment variable not set")
+
+DATABASES={
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+}
 
 
 # Password validation
@@ -175,8 +187,8 @@ FRONTEND_URL = "http://localhost:3000"
 CORS_ALLOW_ALL_ORIGINS = True
 
 
-# Import local settings if available
-try:
-    from .local_settings import *
-except ImportError:
-    pass
+# # Import local settings if available
+# try:
+#     from .local_settings import *
+# except ImportError:
+#     pass
