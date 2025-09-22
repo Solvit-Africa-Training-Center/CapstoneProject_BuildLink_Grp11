@@ -16,7 +16,8 @@ from .serializers import (
     UserSerializer,
     WorkerProfileSerializer,
     PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer,
+    ProfileCompletionSerializer
 )
 
 
@@ -180,6 +181,17 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    def patch(self, request):
+        """
+        Phase 2: profile completion after login.
+        Accepts additional fields like location, gender, national_id_number,
+        company details, and portfolio images.
+        """
+        serializer = ProfileCompletionSerializer(instance=request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
 
 
 # ----------------------------

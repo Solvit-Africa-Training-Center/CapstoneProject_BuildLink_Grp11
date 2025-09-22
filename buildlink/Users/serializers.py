@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import smart_bytes, smart_str, DjangoUnicodeDecodeError
-from Users.models import User, NationalID
+from Users.models import User, NationalID, Portfolio
 
 # If Trades app is separate
 try:
@@ -11,81 +11,39 @@ try:
 except Exception:
     from Users.models import Trade, WorkerTrade
 class RegisterSerializer(serializers.ModelSerializer):
+    """
+    Phase 1 - Minimal registration: role, full_name, email, phone, password, confirm_password.
+    Additional profile details are completed after login.
+    """
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
-    national_id = serializers.CharField(write_only=True, required=False)
-    trade = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
         fields = [
-            'id', 'full_name', 'email', 'phone', 'gender', 'password', 'confirm_password',
-            'role', 'national_id', 'trade',
-            'company_name', 'company_license', 'registration_number'
+            'id', 'role', 'full_name', 'email', 'phone', 'password', 'confirm_password'
         ]
 
     def validate(self, attrs):
-        role = attrs.get('role')
         password = attrs.get('password')
         confirm_password = attrs.get('confirm_password')
-
         if password != confirm_password:
             raise ValidationError("Passwords do not match.")
-
-        # Role-specific validation
-        if role == User.Roles.WORKER:
-            if not attrs.get('national_id'):
-                raise ValidationError("Workers must provide a National ID.")
-            if not attrs.get('trade'):
-                raise ValidationError("Workers must select a trade.")
-
-        elif role == User.Roles.COMPANY:
-            if not attrs.get('company_name'):
-                raise ValidationError("Company name is required for company accounts.")
-            if not attrs.get('company_license'):
-                raise ValidationError("Business license is required for company accounts.")
-            if not attrs.get('registration_number'):
-                raise ValidationError("Registration number is required for company accounts.")
-
         return attrs
 
     def create(self, validated_data):
-        national_id_value = validated_data.pop('national_id', None)
-        trade_name = validated_data.pop('trade', None)
         validated_data.pop('confirm_password', None)
-
-        # Worker: Verify National ID
-        national_id_obj = None
-        if validated_data.get('role') == User.Roles.WORKER:
-            try:
-                national_id_obj = NationalID.objects.get(id_number=national_id_value)
-            except NationalID.DoesNotExist:
-                raise ValidationError({"national_id": "This ID is not registered in the system."})
-
-        # Create the user using the custom manager
         user = User.objects.create_user(
             email=validated_data['email'],
             full_name=validated_data['full_name'],
             phone=validated_data['phone'],
-            gender=validated_data.get('gender'),
             role=validated_data['role'],
-            password=validated_data['password'],
-            national_id=national_id_obj,
-            company_name=validated_data.get('company_name'),
-            company_license=validated_data.get('company_license'),
-            registration_number=validated_data.get('registration_number')
+            password=validated_data['password']
         )
-
-        # Worker: Assign trade
-        if user.role == User.Roles.WORKER and trade_name:
-            trade, _ = Trade.objects.get_or_create(name=trade_name.strip())
-            WorkerTrade.objects.create(user=user, trade=trade)
-
-        # Company: Default status pending
+        # Companies start as pending verification
         if user.role == User.Roles.COMPANY:
             user.verification_status = 'pending'
             user.save()
-
         return user
 
 
@@ -97,8 +55,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'full_name', 'email', 'phone', 'gender',
-            'role', 'verified', 'verification_status'
+            'id', 'full_name', 'email', 'phone', 'gender', 'location',
+            'role', 'verified', 'verification_status',
+            'company_name', 'company_license', 'registration_number'
         ]
 
 
@@ -165,6 +124,70 @@ class WorkerProfileSerializer(serializers.ModelSerializer):
             # Add new trades
             for trade in new_trades:
                 WorkerTrade.objects.get_or_create(user=instance, trade=trade)
+
+        return instance
+
+
+# ----------------------------
+# Phase 2 - Profile Completion
+# ----------------------------
+class ProfileCompletionSerializer(serializers.ModelSerializer):
+    """
+    Allows updating additional fields post-registration.
+    - national_id_number links to NationalID record and can set verified
+    - portfolio_images allows adding Portfolio entries
+    - id_verification_status maps to verification_status
+    """
+    national_id_number = serializers.CharField(write_only=True, required=False, allow_null=True, allow_blank=True)
+    portfolio_images = serializers.ListField(
+        child=serializers.URLField(), write_only=True, required=False
+    )
+    id_verification_status = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+        fields = [
+            'full_name', 'phone', 'gender', 'location',
+            'company_name', 'company_license', 'registration_number',
+            'national_id_number', 'portfolio_images', 'id_verification_status'
+        ]
+
+    def validate_id_verification_status(self, value):
+        allowed = ['pending', 'approved', 'rejected']
+        if value not in allowed:
+            raise serializers.ValidationError(f"Invalid id_verification_status. Must be one of: {allowed}")
+        return value
+
+    def update(self, instance, validated_data):
+        national_id_number = validated_data.pop('national_id_number', None)
+        portfolio_images = validated_data.pop('portfolio_images', [])
+        id_verification_status = validated_data.pop('id_verification_status', None)
+
+        # Update basic fields
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        # National ID linking (workers primarily, but allow opt-in)
+        if national_id_number:
+            try:
+                nid = NationalID.objects.get(id_number=national_id_number)
+                instance.national_id = nid
+                # Do not auto-verify unless business rules say so; keep pending unless pre-approved
+                if instance.role == User.Roles.WORKER and instance.verification_status == 'pending':
+                    instance.verified = True
+            except NationalID.DoesNotExist:
+                raise serializers.ValidationError({"national_id_number": "Not found in registry."})
+
+        # Explicit verification status update (admin workflows may also exist elsewhere)
+        if id_verification_status is not None:
+            instance.verification_status = id_verification_status
+
+        instance.save()
+
+        # Portfolio additions
+        for image_url in portfolio_images:
+            if image_url:
+                Portfolio.objects.create(user=instance, image_url=image_url)
 
         return instance
 
