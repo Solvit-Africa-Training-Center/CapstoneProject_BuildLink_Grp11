@@ -49,6 +49,7 @@ class RegisterView(generics.CreateAPIView):
 # ----------------------------
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
 
 
 class CustomLoginSerializer(TokenObtainPairSerializer):
@@ -61,27 +62,36 @@ class CustomLoginSerializer(TokenObtainPairSerializer):
         password = self.initial_data.get("password")
 
         if not email or not role or not password:
-            raise status.ValidationError("Email, role, and password are required for login.")
+            raise serializers.ValidationError("Email, role, and password are required for login.")
 
         try:
             user = User.objects.get(email=email, role=role)
         except User.DoesNotExist:
-            raise status.ValidationError("Invalid credentials or role.")
+            raise serializers.ValidationError("Invalid credentials or role.")
 
         if not user.check_password(password):
-            raise status.ValidationError("Invalid credentials.")
+            raise serializers.ValidationError("Invalid credentials.")
 
-        # Generate JWT tokens
+        # Let parent serializer create tokens. It expects username_field in attrs
+        attrs[self.username_field] = email
+        attrs['password'] = password
         data = super().validate(attrs)
-        data['role'] = user.role
-        data['full_name'] = user.full_name
-        data['email'] = user.email
-        return data
+
+        # Normalize response keys to what frontend expects
+        response = {
+            'access_token': data.get('access'),
+            'refresh_token': data.get('refresh'),
+            'role': user.role,
+            'full_name': user.full_name,
+            'email': user.email,
+            'message': 'Login successful.'
+        }
+        return response
 
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomLoginSerializer
-    serializer_class= permissions.AllowAny
+    permission_classes = [permissions.AllowAny]
     
     @swagger_auto_schema(tags=["Authentication"])
     def post(self, request, *args, **kwargs):
@@ -122,6 +132,31 @@ class LogoutView(APIView):
             return Response({"detail": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
         except TokenError:
             return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ----------------------------
+# Refresh Token (custom shape)
+# ----------------------------
+class CustomTokenRefreshView(APIView):
+    """
+    Accepts { "refreshToken": "..." } and returns { "access_token": "..." }.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(tags=["Authentication"])
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refreshToken') or request.data.get('refresh')
+        if not refresh_token:
+            return Response({"detail": "refreshToken is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+            return Response({
+                'access_token': access_token
+            }, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({"detail": "Invalid or expired refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 # ----------------------------

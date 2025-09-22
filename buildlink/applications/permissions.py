@@ -7,21 +7,12 @@ class CanApplyToJob(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in ['worker', 'student']
 
-
-class IsJobOwner(permissions.BasePermission):
-    """Only the job owner can view applications for their job."""
-
-    def has_object_permission(self, request, view, obj):
-        return obj.posted_by_id == request.user.id
-
-
-
-
-class IsJobOwner(permissions.BasePermission):
+class IsApplicationJobOwner(permissions.BasePermission):
     """
-    Custom permission to only allow job owners to update an application's status.
+    Only the owner of the related job can act on an application object
+    (e.g., update status).
     """
 
     def has_object_permission(self, request, view, obj):
-        # The logged-in user must be the owner of the job
-        return obj.job.posted_by == request.user
+        # obj is an Application
+        return getattr(obj, 'job', None) and obj.job.posted_by_id == request.user.id

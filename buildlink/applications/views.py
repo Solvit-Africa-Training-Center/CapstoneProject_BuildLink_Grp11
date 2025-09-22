@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from rest_framework.pagination import PageNumberPagination
 from .serializers import ApplicationCreateSerializer, MyApplicationListSerializer, ApplicantForOwnerSerializer, ApplicationStatusUpdateSerializer, ApplicationDetailSerializer
-from .permissions import CanApplyToJob, IsJobOwner
+from .permissions import CanApplyToJob, IsApplicationJobOwner
 from drf_yasg.utils import swagger_auto_schema
 
 from .models import Application
@@ -136,7 +136,7 @@ class ApplicationStatusUpdateView(generics.UpdateAPIView):
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationStatusUpdateSerializer
-    permission_classes = [permissions.IsAuthenticated, IsJobOwner]
+    permission_classes = [permissions.IsAuthenticated, IsApplicationJobOwner]
 
     def patch(self, request, *args, **kwargs):
         application = get_object_or_404(Application, pk=kwargs['pk'])
