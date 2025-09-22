@@ -19,6 +19,8 @@ from .serializers import (
     PasswordResetConfirmSerializer,
     ProfileCompletionSerializer
 )
+from .serializers import StudentProfileSerializer, OwnerProfileSerializer, CompanyProfileSerializer
+from .permissions import IsStudent, IsOwner, IsCompany
 
 
 # ----------------------------
@@ -216,6 +218,50 @@ class WorkerProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+
+# ----------------------------
+# Student Profile
+# ----------------------------
+class StudentProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = StudentProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStudent]
+
+    @swagger_auto_schema(tags=["Authentication"], operation_summary="Student profile")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        return self.request.user
+
+
+# ----------------------------
+# Owner Profile
+# ----------------------------
+class OwnerProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = OwnerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    @swagger_auto_schema(tags=["Authentication"], operation_summary="Owner profile")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        return self.request.user
+
+
+# ----------------------------
+# Company Profile
+# ----------------------------
+class CompanyProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = CompanyProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompany]
+
+    @swagger_auto_schema(tags=["Authentication"], operation_summary="Company profile")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        return self.request.user
 
 # ----------------------------
 # Company Verification

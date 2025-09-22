@@ -128,6 +128,55 @@ class WorkerProfileSerializer(serializers.ModelSerializer):
         return instance
 
 
+class StudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id', 'full_name', 'email', 'phone', 'gender', 'location', 'role'
+        ]
+        read_only_fields = ['role', 'email']
+
+    def update(self, instance, validated_data):
+        for field in ['full_name', 'phone', 'gender', 'location']:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+        instance.save()
+        return instance
+
+
+class OwnerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id', 'full_name', 'email', 'phone', 'gender', 'location', 'role'
+        ]
+        read_only_fields = ['role', 'email']
+
+    def update(self, instance, validated_data):
+        for field in ['full_name', 'phone', 'gender', 'location']:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+        instance.save()
+        return instance
+
+
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id', 'full_name', 'email', 'phone', 'location', 'role',
+            'company_name', 'company_license', 'registration_number',
+            'verification_status', 'verified'
+        ]
+        read_only_fields = ['role', 'email', 'verification_status', 'verified']
+
+    def update(self, instance, validated_data):
+        for field in ['full_name', 'phone', 'location', 'company_name', 'company_license', 'registration_number']:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+        instance.save()
+        return instance
+
 # ----------------------------
 # Phase 2 - Profile Completion
 # ----------------------------
